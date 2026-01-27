@@ -1,0 +1,177 @@
+<div class="roles-container">
+  <div class="header">
+    <h1>Catálogo de Roles</h1>
+    <button class="btn btn-primary" (click)="openCreateForm()">
+      + Nuevo Role
+    </button>
+  </div>
+
+  <!-- Mensajes -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+  <div class="alert alert-error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="loading && !showForm">
+    Cargando...
+  </div>
+
+  <!-- Tabla de Roles -->
+  <div class="table-container" *ngIf="!loading && !showForm">
+    <table class="roles-table">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="sortBy('id')">
+            ID {{ getSortIcon('id') }}
+          </th>
+          <th class="sortable" (click)="sortBy('nameRole')">
+            Nombre del Role {{ getSortIcon('nameRole') }}
+          </th>
+          <th>Salario Base</th>
+          <th>Bono Role</th>
+          <th>Bono Horas</th>
+          <th>Bono Entregas</th>
+          <th>Salario Total</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let role of roles" [class.inactive]="!role.statusRole">
+          <td>{{ role.id }}</td>
+          <td>{{ role.nameRole }}</td>
+          <td>${{ role.salaryBase | number:'1.2-2' }}</td>
+          <td>${{ role.bonusRole | number:'1.2-2' }}</td>
+          <td>${{ role.bonusHours | number:'1.2-2' }}</td>
+          <td>${{ role.bonusDeliveries | number:'1.2-2' }}</td>
+          <td class="total-salary">${{ calculateTotalSalary(role) | number:'1.2-2' }}</td>
+
+          <td>
+            <span class="status-badge" [class.active]="role.statusRole" [class.inactive-badge]="!role.statusRole">
+              {{ role.statusRole ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="actions">
+            <button class="btn-icon btn-edit" (click)="openEditForm(role)" title="Editar" *ngIf="role.statusRole">
+              <span class="icon-edit">✎</span>
+            </button>
+            <button class="btn-icon btn-delete" (click)="deleteRole(role)" title="Desactivar" *ngIf="role.statusRole">
+              <span class="icon-delete">×</span>
+            </button>
+            <button class="btn-icon btn-restore" (click)="restoreRole(role)" title="Restaurar" *ngIf="!role.statusRole">
+              <span class="icon-restore">↻</span>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="roles.length === 0">
+          <td colspan="10" class="no-data">No hay roles registrados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Formulario -->
+  <div class="form-modal" *ngIf="showForm">
+    <div class="form-content">
+      <div class="form-header">
+        <h2>{{ isEditing ? 'Editar Role' : 'Nuevo Role' }}</h2>
+        <button class="btn-close" (click)="closeForm()">×</button>
+      </div>
+
+      <form (ngSubmit)="saveRole()">
+        <div class="form-group">
+          <label for="nameRole">Nombre del Role *</label>
+          <input
+            type="text"
+            id="nameRole"
+            [(ngModel)]="roleForm.nameRole"
+            name="nameRole"
+            required
+            placeholder="Ej: Gerente, Operador, etc."
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="salaryBase">Salario Base *</label>
+            <input
+              type="number"
+              id="salaryBase"
+              [(ngModel)]="roleForm.salaryBase"
+              name="salaryBase"
+              min="0"
+              step="0.01"
+              required
+              placeholder="0.00"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="bonusRole">Bono Role</label>
+            <input
+              type="number"
+              id="bonusRole"
+              [(ngModel)]="roleForm.bonusRole"
+              name="bonusRole"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="bonusHours">Bono Horas</label>
+            <input
+              type="number"
+              id="bonusHours"
+              [(ngModel)]="roleForm.bonusHours"
+              name="bonusHours"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="bonusDeliveries">Bono Entregas</label>
+            <input
+              type="number"
+              id="bonusDeliveries"
+              [(ngModel)]="roleForm.bonusDeliveries"
+              name="bonusDeliveries"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              id="is_admin"
+              [(ngModel)]="roleForm.is_admin"
+              name="is_admin"
+            />
+            <span>¿Es rol de administrador?</span>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            {{ loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

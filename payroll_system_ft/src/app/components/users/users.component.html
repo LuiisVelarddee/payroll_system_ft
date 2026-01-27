@@ -1,0 +1,198 @@
+<div class="users-container">
+  <div class="header">
+    <h1>Catálogo de Usuarios</h1>
+    <button class="btn btn-primary" (click)="openCreateForm()">
+      + Nuevo Usuario
+    </button>
+  </div>
+
+  <!-- Mensajes -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+  <div class="alert alert-error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="loading && !showForm && !showPasswordModal">
+    Cargando...
+  </div>
+
+  <!-- Tabla de Usuarios -->
+  <div class="table-container" *ngIf="!loading && !showForm && !showPasswordModal">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="sortBy('id')">
+            ID {{ getSortIcon('id') }}
+          </th>
+          <th class="sortable" (click)="sortBy('employeeNumber')">
+            Número de Empleado {{ getSortIcon('employeeNumber') }}
+          </th>
+          <th>Admin</th>
+          <th>Bloqueado</th>
+          <th>Intentos</th>
+          <th>Cambiar Pass</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users" [class.inactive]="!user.statusUser">
+          <td>{{ user.id }}</td>
+          <td>{{ user.employeeNumber }}</td>
+          <td>
+            <span class="admin-badge" *ngIf="user.is_admin">✓</span>
+            <span *ngIf="!user.is_admin">-</span>
+          </td>
+          <td>
+            <span class="block-badge" [class.blocked]="user.isBlock">
+              {{ user.isBlock ? 'Sí' : 'No' }}
+            </span>
+          </td>
+          <td>{{ user.attempts }}</td>
+          <td>
+            <span class="changepass-badge" *ngIf="user.changePass">✓</span>
+            <span *ngIf="!user.changePass">-</span>
+          </td>
+          <td>
+            <span class="status-badge" [class.active]="user.statusUser" [class.inactive-badge]="!user.statusUser">
+              {{ user.statusUser ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="actions">
+            <button class="btn-icon btn-edit" (click)="openEditForm(user)" title="Editar" *ngIf="user.statusUser">
+              <span class="icon-edit">✎</span>
+            </button>
+            <button class="btn-icon btn-password" (click)="openPasswordModal(user)" title="Cambiar Contraseña" *ngIf="user.statusUser">
+              <span class="icon-password">🔑</span>
+            </button>
+            <button class="btn-icon btn-block" (click)="toggleBlock(user)" [title]="user.isBlock ? 'Desbloquear' : 'Bloquear'" *ngIf="user.statusUser">
+              <span class="icon-block">{{ user.isBlock ? '🔓' : '🔒' }}</span>
+            </button>
+            <button class="btn-icon btn-reset" (click)="resetAttempts(user)" title="Reiniciar Intentos" *ngIf="user.statusUser">
+              <span class="icon-reset">⟲</span>
+            </button>
+            <button class="btn-icon btn-delete" (click)="deleteUser(user)" title="Desactivar" *ngIf="user.statusUser">
+              <span class="icon-delete">×</span>
+            </button>
+            <button class="btn-icon btn-restore" (click)="restoreUser(user)" title="Restaurar" *ngIf="!user.statusUser">
+              <span class="icon-restore">↻</span>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="users.length === 0">
+          <td colspan="8" class="no-data">No hay usuarios registrados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Formulario Crear/Editar -->
+  <div class="form-modal" *ngIf="showForm">
+    <div class="form-content">
+      <div class="form-header">
+        <h2>{{ isEditing ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
+        <button class="btn-close" (click)="closeForm()">×</button>
+      </div>
+
+      <form (ngSubmit)="saveUser()">
+        <div class="form-group">
+          <label for="employeeNumber">Número de Empleado *</label>
+          <input
+            type="text"
+            id="employeeNumber"
+            [(ngModel)]="userForm.employeeNumber"
+            name="employeeNumber"
+            required
+            placeholder="Ej: EMP001"
+            [disabled]="isEditing"
+          />
+        </div>
+
+        <div class="form-group" *ngIf="!isEditing">
+          <label for="password">Contraseña *</label>
+          <input
+            type="password"
+            id="password"
+            [(ngModel)]="userForm.password"
+            name="password"
+            [required]="!isEditing"
+            placeholder="Mínimo 6 caracteres"
+            minlength="6"
+          />
+          <small class="form-hint">La contraseña debe tener al menos 6 caracteres</small>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              id="is_admin"
+              [(ngModel)]="userForm.is_admin"
+              name="is_admin"
+            />
+            <span>¿Es administrador del sistema?</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              id="changePass"
+              [(ngModel)]="userForm.changePass"
+              name="changePass"
+            />
+            <span>¿Forzar cambio de contraseña en próximo inicio?</span>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            {{ loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Cambiar Contraseña -->
+  <div class="form-modal" *ngIf="showPasswordModal">
+    <div class="form-content password-modal">
+      <div class="form-header">
+        <h2>Cambiar Contraseña</h2>
+        <button class="btn-close" (click)="closePasswordModal()">×</button>
+      </div>
+
+      <form (ngSubmit)="changePassword()">
+        <div class="form-group">
+          <label for="newPassword">Nueva Contraseña *</label>
+          <input
+            type="password"
+            id="newPassword"
+            [(ngModel)]="newPassword"
+            name="newPassword"
+            required
+            placeholder="Mínimo 6 caracteres"
+            minlength="6"
+          />
+          <small class="form-hint">La contraseña debe tener al menos 6 caracteres</small>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closePasswordModal()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            {{ loading ? 'Cambiando...' : 'Cambiar Contraseña' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

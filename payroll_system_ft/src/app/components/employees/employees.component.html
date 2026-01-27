@@ -1,0 +1,161 @@
+<div class="employees-container">
+  <div class="header">
+    <h1>Catálogo de Empleados</h1>
+    <button class="btn btn-primary" (click)="openCreateForm()">
+      + Nuevo Empleado
+    </button>
+  </div>
+
+  <!-- Mensajes -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+  <div class="alert alert-error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="loading && !showForm">
+    Cargando...
+  </div>
+
+  <!-- Tabla de Empleados -->
+  <div class="table-container" *ngIf="!loading && !showForm">
+    <table class="employees-table">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="sortBy('id')">
+            ID {{ getSortIcon('id') }}
+          </th>
+          <th class="sortable" (click)="sortBy('employeeNumber')">
+            Número de Empleado {{ getSortIcon('employeeNumber') }}
+          </th>
+          <th class="sortable" (click)="sortBy('nameEmployee')">
+            Nombre {{ getSortIcon('nameEmployee') }}
+          </th>
+          <th>Rol</th>
+          <th>Admin</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let employee of employees" [class.inactive]="!employee.statusEmployee">
+          <td>{{ employee.id }}</td>
+          <td>{{ employee.employeeNumber }}</td>
+          <td>{{ employee.nameEmployee }}</td>
+          <td>{{ getRoleName(employee.roleID) }}</td>
+          <td>
+            <span class="admin-badge" *ngIf="employee.user?.is_admin">✓</span>
+            <span *ngIf="!employee.user?.is_admin">-</span>
+          </td>
+          <td>
+            <span class="status-badge" [class.active]="employee.statusEmployee" [class.inactive-badge]="!employee.statusEmployee">
+              {{ employee.statusEmployee ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="actions">
+            <button class="btn-icon btn-edit" (click)="openEditForm(employee)" title="Editar" *ngIf="employee.statusEmployee">
+              <span class="icon-edit">✎</span>
+            </button>
+            <button class="btn-icon btn-delete" (click)="deleteEmployee(employee)" title="Desactivar" *ngIf="employee.statusEmployee">
+              <span class="icon-delete">×</span>
+            </button>
+            <button class="btn-icon btn-restore" (click)="restoreEmployee(employee)" title="Restaurar" *ngIf="!employee.statusEmployee">
+              <span class="icon-restore">↻</span>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="employees.length === 0">
+          <td colspan="7" class="no-data">No hay empleados registrados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Formulario -->
+  <div class="form-modal" *ngIf="showForm">
+    <div class="form-content">
+      <div class="form-header">
+        <h2>{{ isEditing ? 'Editar Empleado' : 'Nuevo Empleado' }}</h2>
+        <button class="btn-close" (click)="closeForm()">×</button>
+      </div>
+
+      <form (ngSubmit)="saveEmployee()">
+        <div class="form-group">
+          <label for="employeeNumber">Número de Empleado *</label>
+          <input
+            type="text"
+            id="employeeNumber"
+            [(ngModel)]="employeeForm.employeeNumber"
+            name="employeeNumber"
+            required
+            placeholder="Ej: EMP001"
+            [disabled]="isEditing"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="nameEmployee">Nombre Completo *</label>
+          <input
+            type="text"
+            id="nameEmployee"
+            [(ngModel)]="employeeForm.nameEmployee"
+            name="nameEmployee"
+            required
+            placeholder="Ej: Juan Pérez García"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="roleID">Rol *</label>
+          <select
+            id="roleID"
+            [(ngModel)]="employeeForm.roleID"
+            name="roleID"
+            required>
+            <option [value]="0" disabled>Seleccione un rol</option>
+            <option *ngFor="let role of roles" [value]="role.id">
+              {{ role.nameRole }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group" *ngIf="!isEditing">
+          <label for="password">Contraseña *</label>
+          <input
+            type="password"
+            id="password"
+            [(ngModel)]="employeeForm.password"
+            name="password"
+            [required]="!isEditing"
+            placeholder="Mínimo 6 caracteres"
+            minlength="6"
+          />
+          <small class="form-hint">La contraseña debe tener al menos 6 caracteres</small>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              id="is_admin"
+              [(ngModel)]="employeeForm.is_admin"
+              name="is_admin"
+            />
+            <span>¿Es administrador del sistema?</span>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            {{ loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

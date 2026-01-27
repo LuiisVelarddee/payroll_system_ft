@@ -1,0 +1,21 @@
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h2>Sistema de Nómina</h2>
+  </div>
+  
+  <nav class="sidebar-nav">
+    <ul class="nav-list">
+      <li *ngFor="let item of menuItems" class="nav-item">
+        <a 
+          [routerLink]="item.route" 
+          routerLinkActive="active"
+          class="nav-link">
+          <span class="nav-icon">
+            <i class="icon-{{item.icon}}"></i>
+          </span>
+          <span class="nav-title">{{ item.title }}</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
