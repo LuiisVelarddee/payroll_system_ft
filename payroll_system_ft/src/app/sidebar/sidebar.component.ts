@@ -22,6 +22,11 @@ export class SidebarComponent {
       title: 'Catálogo Usuarios',
       icon: 'user',
       route: '/usuarios'
+    },
+    {
+      title: 'Captura de Nómina',
+      icon: 'money',
+      route: '/nomina'
     }
   ];
 

@@ -41,8 +41,7 @@ export class EmployeesComponent implements OnInit {
     this.employeeService.getEmployees(undefined, false).subscribe({
       next: (response) => {
         if (response.success) {
-          this.employees = response.data;
-        }
+          this.employees = response.data;        }
         this.loading = false;
       },
       error: (error) => {
@@ -56,10 +55,8 @@ export class EmployeesComponent implements OnInit {
   loadRoles(): void {
     this.roleService.getRoles(true, false).subscribe({
       next: (response) => {
-        console.log('Respuesta de roles:', response);
         if (response.success) {
           this.roles = response.data;
-          console.log('Roles cargados:', this.roles);
         }
       },
       error: (error) => {

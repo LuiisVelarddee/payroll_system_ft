@@ -9,6 +9,7 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 import { RolesComponent } from './components/roles/roles.component';
 import { EmployeesComponent } from './components/employees/employees.component';
 import { UsersComponent } from './components/users/users.component';
+import { PayrollComponent } from './components/payroll/payroll.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { UsersComponent } from './components/users/users.component';
     SidebarComponent,
     RolesComponent,
     EmployeesComponent,
-    UsersComponent
+    UsersComponent,
+    PayrollComponent
   ],
   imports: [
     BrowserModule,

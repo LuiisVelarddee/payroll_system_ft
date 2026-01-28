@@ -34,7 +34,6 @@
           <th>Bono Role</th>
           <th>Bono Horas</th>
           <th>Bono Entregas</th>
-          <th>Salario Total</th>
           <th>Estado</th>
           <th>Acciones</th>
         </tr>
@@ -47,8 +46,6 @@
           <td>${{ role.bonusRole | number:'1.2-2' }}</td>
           <td>${{ role.bonusHours | number:'1.2-2' }}</td>
           <td>${{ role.bonusDeliveries | number:'1.2-2' }}</td>
-          <td class="total-salary">${{ calculateTotalSalary(role) | number:'1.2-2' }}</td>
-
           <td>
             <span class="status-badge" [class.active]="role.statusRole" [class.inactive-badge]="!role.statusRole">
               {{ role.statusRole ? 'Activo' : 'Inactivo' }}
