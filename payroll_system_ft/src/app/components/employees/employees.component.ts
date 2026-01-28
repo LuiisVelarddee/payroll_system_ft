@@ -41,7 +41,9 @@ export class EmployeesComponent implements OnInit {
     this.employeeService.getEmployees(undefined, false).subscribe({
       next: (response) => {
         if (response.success) {
-          this.employees = response.data;        }
+          // Ordenar por ID ascendente
+          this.employees = response.data.sort((a: any, b: any) => a.id - b.id);
+        }
         this.loading = false;
       },
       error: (error) => {

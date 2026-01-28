@@ -23,6 +23,7 @@
       <label for="filterYear">Año:</label>
       <select id="filterYear" [(ngModel)]="selectedYear" (change)="filterByPeriod()">
         <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+        <option [value]="nextYear" disabled>{{ nextYear }} (Próximo)</option>
       </select>
     </div>
   </div>
@@ -33,6 +34,7 @@
       <label for="filterYearAll">Año:</label>
       <select id="filterYearAll" [(ngModel)]="selectedYear" (change)="loadAllMonths()">
         <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+        <option [value]="nextYear" disabled>{{ nextYear }} (Próximo)</option>
       </select>
     </div>
   </div>
@@ -46,8 +48,11 @@
   </div>
 
   <!-- Loading -->
-  <div class="loading" *ngIf="loading && !showForm">
-    Cargando...
+  <div class="loading-overlay" *ngIf="loading && !showForm">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <div class="loading-text">Cargando datos<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+    </div>
   </div>
 
   <!-- Tabla de Nóminas (Vista Mensual) -->

@@ -35,6 +35,7 @@ export class PayrollComponent implements OnInit {
   ];
   
   years: number[] = [];
+  nextYear: number = new Date().getFullYear() + 1;
   selectedMonth: string = '';
   selectedYear: number = new Date().getFullYear();
 
@@ -48,22 +49,50 @@ export class PayrollComponent implements OnInit {
   constructor(
     private payrollService: PayrollService,
     private employeeService: EmployeeService
-  ) {
-    // Generate years array (current year - 2 to current year + 1) definimos cantidad de years a mostrar
-    const currentYear = new Date().getFullYear();
-    for (let year = currentYear - 2; year <= currentYear + 1; year++) {
-      this.years.push(year);
-    }
-  }
+  ) {}
 
   ngOnInit(): void {
     this.selectedMonth = this.months[new Date().getMonth()];
+    this.loadAvailableYears();
     this.loadEmployees();
-    
-    // Cargar todos los meses con un pequeño delay para asegurar que el componente esté listo
-    setTimeout(() => {
-      this.loadAllMonths();
-    }, 100);
+  }
+
+  loadAvailableYears(): void {
+    this.payrollService.getAvailableYears().subscribe({
+      next: (response) => {
+        if (response.success && response.data.length > 0) {
+          this.years = response.data;
+          // Si el año actual no está en la lista, agregarlo
+          const currentYear = new Date().getFullYear();
+          if (!this.years.includes(currentYear)) {
+            this.years.push(currentYear);
+            this.years.sort((a, b) => a - b);
+          }
+          // Establecer el año más reciente como seleccionado
+          this.selectedYear = Math.max(...this.years);
+          this.formYear = this.selectedYear;
+          
+          // Cargar todos los meses con un pequeño delay
+          setTimeout(() => {
+            this.loadAllMonths();
+          }, 100);
+        } else {
+          // Si no hay años con datos, usar el año actual
+          this.years = [new Date().getFullYear()];
+          setTimeout(() => {
+            this.loadAllMonths();
+          }, 100);
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar años disponibles:', error);
+        // En caso de error, usar el año actual
+        this.years = [new Date().getFullYear()];
+        setTimeout(() => {
+          this.loadAllMonths();
+        }, 100);
+      }
+    });
   }
 
   loadEmployees(): void {

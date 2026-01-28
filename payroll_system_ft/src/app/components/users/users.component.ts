@@ -37,7 +37,8 @@ export class UsersComponent implements OnInit {
     this.userService.getUsers(undefined, false).subscribe({
       next: (response) => {
         if (response.success) {
-          this.users = response.data;
+          // Ordenar por ID ascendente
+          this.users = response.data.sort((a: any, b: any) => a.id - b.id);
         }
         this.loading = false;
       },

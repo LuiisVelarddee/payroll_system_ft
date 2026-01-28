@@ -1,0 +1,184 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>Dashboard Comparativo</h1>
+    <div class="filters">
+      <div class="filter-group">
+        <label for="filterMonth">Mes:</label>
+        <select id="filterMonth" [(ngModel)]="selectedMonth" (change)="onFilterChange()">
+          <option *ngFor="let month of months" [value]="month">{{ month }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filterYear">Año Actual:</label>
+        <select id="filterYear" [(ngModel)]="selectedYear" (change)="onFilterChange()">
+          <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+          <option [value]="nextYear" disabled>{{ nextYear }} (Próximo)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="comparison-subtitle">
+    <h3>Comparación: {{ selectedMonth }} {{ selectedYear }} vs {{ selectedMonth }} {{ selectedYear - 1 }}</h3>
+  </div>
+
+  <!-- Comparison Stats Cards -->
+  <div class="comparison-stats-grid">
+    <!-- Total Payroll -->
+    <div class="comparison-card">
+      <div class="card-title">Gasto Total Nómina</div>
+      <div class="comparison-values">
+        <div class="previous-value">
+          <div class="label">{{ selectedYear - 1 }}</div>
+          <div class="value">${{ previousStats.totalPayroll | number:'1.2-2' }}</div>
+        </div>
+        <div class="current-value">
+          <div class="label">{{ selectedYear }}</div>
+          <div class="value">${{ currentStats.totalPayroll | number:'1.2-2' }}</div>
+        </div>
+      </div>
+      <div class="difference" [ngClass]="{'positive': payrollDiff > 0, 'negative': payrollDiff < 0, 'neutral': payrollDiff === 0}">
+        <span *ngIf="payrollDiff > 0">↑</span>
+        <span *ngIf="payrollDiff < 0">↓</span>
+        {{ payrollDiff | number:'1.2-2' }}%
+      </div>
+    </div>
+
+    <!-- Total Deliveries -->
+    <div class="comparison-card">
+      <div class="card-title">Total Entregas</div>
+      <div class="comparison-values">
+        <div class="previous-value">
+          <div class="label">{{ selectedYear - 1 }}</div>
+          <div class="value">{{ previousStats.totalDeliveries }}</div>
+        </div>
+        <div class="current-value">
+          <div class="label">{{ selectedYear }}</div>
+          <div class="value">{{ currentStats.totalDeliveries }}</div>
+        </div>
+      </div>
+      <div class="difference" [ngClass]="{'positive': deliveriesDiff > 0, 'negative': deliveriesDiff < 0, 'neutral': deliveriesDiff === 0}">
+        <span *ngIf="deliveriesDiff > 0">↑</span>
+        <span *ngIf="deliveriesDiff < 0">↓</span>
+        {{ deliveriesDiff | number:'1.2-2' }}%
+      </div>
+    </div>
+
+    <!-- Total Bonuses -->
+    <div class="comparison-card">
+      <div class="card-title">Total Bonos</div>
+      <div class="comparison-values">
+        <div class="previous-value">
+          <div class="label">{{ selectedYear - 1 }}</div>
+          <div class="value">${{ previousStats.totalBonuses | number:'1.2-2' }}</div>
+        </div>
+        <div class="current-value">
+          <div class="label">{{ selectedYear }}</div>
+          <div class="value">${{ currentStats.totalBonuses | number:'1.2-2' }}</div>
+        </div>
+      </div>
+      <div class="difference" [ngClass]="{'positive': bonusesDiff > 0, 'negative': bonusesDiff < 0, 'neutral': bonusesDiff === 0}">
+        <span *ngIf="bonusesDiff > 0">↑</span>
+        <span *ngIf="bonusesDiff < 0">↓</span>
+        {{ bonusesDiff | number:'1.2-2' }}%
+      </div>
+    </div>
+
+    <!-- Total Deductions -->
+    <div class="comparison-card">
+      <div class="card-title">Total Retenciones (ISR)</div>
+      <div class="comparison-values">
+        <div class="previous-value">
+          <div class="label">{{ selectedYear - 1 }}</div>
+          <div class="value">${{ previousStats.totalDeductions | number:'1.2-2' }}</div>
+        </div>
+        <div class="current-value">
+          <div class="label">{{ selectedYear }}</div>
+          <div class="value">${{ currentStats.totalDeductions | number:'1.2-2' }}</div>
+        </div>
+      </div>
+      <div class="difference" [ngClass]="{'positive': deductionsDiff < 0, 'negative': deductionsDiff > 0, 'neutral': deductionsDiff === 0}">
+        <span *ngIf="deductionsDiff > 0">↑</span>
+        <span *ngIf="deductionsDiff < 0">↓</span>
+        {{ deductionsDiff | number:'1.2-2' }}%
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Chart -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <h3>Comparación Visual</h3>
+    </div>
+    <div class="chart-container">
+      <canvas id="comparisonChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Employee Comparison Table -->
+  <div class="details-card">
+    <div class="details-header">
+      <h3>Comparación por Empleado</h3>
+    </div>
+    <div class="table-container">
+      <table class="details-table">
+        <thead>
+          <tr>
+            <th>Empleado</th>
+            <th>Año</th>
+            <th>Horas</th>
+            <th>Entregas</th>
+            <th>Retenciones</th>
+            <th>Vales</th>
+            <th>Total Neto</th>
+            <th>Variación</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let employeeNumber of getAllEmployeeNumbers()">
+            <ng-container *ngIf="getEmployeeDifference(employeeNumber) as diff">
+              <tr class="previous-row">
+                <td rowspan="2" class="employee-cell">
+                  <div class="employee-name">{{ diff.previous?.name || diff.current?.name }}</div>
+                  <div class="employee-number">{{ employeeNumber }}</div>
+                </td>
+                <td class="year-cell">{{ selectedYear - 1 }}</td>
+                <td class="hours-worked">{{ diff.previous?.hoursWorked || 0 }} hrs</td>
+                <td class="amount">${{ diff.previous?.deliveryPayment || 0 | number:'1.2-2' }}</td>
+                <td class="amount">-${{ diff.previous?.deductions || 0 | number:'1.2-2' }}</td>
+                <td class="amount">${{ diff.previous?.foodVouchers || 0 | number:'1.2-2' }}</td>
+                <td class="amount total">${{ diff.previous?.totalNet || 0 | number:'1.2-2' }}</td>
+                <td rowspan="2" class="variation-cell">
+                  <div class="variation" [ngClass]="{'positive': diff.diff > 0, 'negative': diff.diff < 0, 'neutral': diff.diff === 0}">
+                    <span *ngIf="diff.diff > 0">↑</span>
+                    <span *ngIf="diff.diff < 0">↓</span>
+                    {{ diff.diff | number:'1.2-2' }}%
+                  </div>
+                </td>
+              </tr>
+              <tr class="current-row">
+                <td class="year-cell current">{{ selectedYear }}</td>
+                <td class="hours-worked">{{ diff.current?.hoursWorked || 0 }} hrs</td>
+                <td class="amount">${{ diff.current?.deliveryPayment || 0 | number:'1.2-2' }}</td>
+                <td class="amount">-${{ diff.current?.deductions || 0 | number:'1.2-2' }}</td>
+                <td class="amount">${{ diff.current?.foodVouchers || 0 | number:'1.2-2' }}</td>
+                <td class="amount total">${{ diff.current?.totalNet || 0 | number:'1.2-2' }}</td>
+              </tr>
+            </ng-container>
+          </ng-container>
+          <tr *ngIf="getAllEmployeeNumbers().length === 0">
+            <td colspan="8" class="no-data">No hay datos disponibles para comparar</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <div class="loading-text">Cargando datos<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+    </div>
+  </div>
+</div>

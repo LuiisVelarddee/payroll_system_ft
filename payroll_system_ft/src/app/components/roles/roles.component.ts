@@ -37,7 +37,8 @@ export class RolesComponent implements OnInit {
     this.roleService.getRoles(undefined, false).subscribe({
       next: (response: ApiResponse<any>) => {
         if (response.success && response.data) {
-          this.roles = response.data;
+          // Ordenar por ID ascendente
+          this.roles = response.data.sort((a: any, b: any) => a.id - b.id);
         }
         this.loading = false;
       },

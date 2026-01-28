@@ -15,8 +15,11 @@
   </div>
 
   <!-- Loading -->
-  <div class="loading" *ngIf="loading && !showForm && !showPasswordModal">
-    Cargando...
+  <div class="loading-overlay" *ngIf="loading && !showForm && !showPasswordModal">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <div class="loading-text">Cargando datos<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+    </div>
   </div>
 
   <!-- Tabla de Usuarios -->

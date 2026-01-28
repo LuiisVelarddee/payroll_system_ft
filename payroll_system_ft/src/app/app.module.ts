@@ -10,6 +10,8 @@ import { RolesComponent } from './components/roles/roles.component';
 import { EmployeesComponent } from './components/employees/employees.component';
 import { UsersComponent } from './components/users/users.component';
 import { PayrollComponent } from './components/payroll/payroll.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { DashboardComparativoComponent } from './components/dashboard-comparativo/dashboard-comparativo.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +20,9 @@ import { PayrollComponent } from './components/payroll/payroll.component';
     RolesComponent,
     EmployeesComponent,
     UsersComponent,
-    PayrollComponent
+    PayrollComponent,
+    DashboardComponent,
+    DashboardComparativoComponent
   ],
   imports: [
     BrowserModule,

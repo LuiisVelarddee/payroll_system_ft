@@ -74,4 +74,8 @@ export class PayrollService {
     const body = userUpdate ? { userUpdate } : {};
     return this.http.patch<any>(`${this.apiUrl}/${id}/restore`, body);
   }
+
+  getAvailableYears(): Observable<any> {
+    return this.http.get<any>('http://localhost:8000/api/dashboard/available-years');
+  }
 }

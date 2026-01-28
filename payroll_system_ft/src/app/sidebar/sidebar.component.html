@@ -1,20 +1,56 @@
 <div class="sidebar">
   <div class="sidebar-header">
-    <h2>Sistema de Nómina</h2>
+    <div class="logo">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 22V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 7L12 12L22 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h2>Sistema de Nómina</h2>
+    </div>
   </div>
   
   <nav class="sidebar-nav">
     <ul class="nav-list">
       <li *ngFor="let item of menuItems" class="nav-item">
+        <!-- Item sin hijos (enlace directo) -->
         <a 
+          *ngIf="!item.children"
           [routerLink]="item.route" 
           routerLinkActive="active"
           class="nav-link">
-          <span class="nav-icon">
-            <i class="icon-{{item.icon}}"></i>
-          </span>
+          <span class="nav-icon" [innerHTML]="item.iconSvg"></span>
           <span class="nav-title">{{ item.title }}</span>
         </a>
+        
+        <!-- Item con hijos (desplegable) -->
+        <div *ngIf="item.children" class="nav-item-parent">
+          <a 
+            (click)="toggleSubmenu(item)"
+            class="nav-link"
+            [class.expanded]="item.expanded">
+            <span class="nav-icon" [innerHTML]="item.iconSvg"></span>
+            <span class="nav-title">{{ item.title }}</span>
+            <span class="nav-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" [class.rotated]="item.expanded">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </span>
+          </a>
+          
+          <!-- Submenú -->
+          <ul class="submenu" [class.show]="item.expanded">
+            <li *ngFor="let child of item.children" class="submenu-item">
+              <a 
+                [routerLink]="child.route" 
+                routerLinkActive="active"
+                class="submenu-link">
+                <span class="submenu-icon" [innerHTML]="child.iconSvg"></span>
+                <span class="submenu-title">{{ child.title }}</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </li>
     </ul>
   </nav>
