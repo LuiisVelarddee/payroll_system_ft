@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface PayrollRecord {
   id?: number;
@@ -27,7 +28,7 @@ export interface PayrollRecord {
   providedIn: 'root'
 })
 export class PayrollService {
-  private apiUrl = 'http://localhost:8000/api/payroll';
+  private apiUrl = environment.api + '/payroll';
 
   constructor(private http: HttpClient) { }
 

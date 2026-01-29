@@ -3,6 +3,7 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
+  api: 'https://deeppink-oyster-267884.hostingersite.com/api',
   production: false
 };
 
