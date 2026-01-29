@@ -8,6 +8,7 @@ export interface DashboardStats {
   totalDeliveries: number;
   totalBonuses: number;
   totalDeductions: number;
+  totalBaseSalary: number;
 }
 
 export interface MonthlyTrend {
@@ -25,6 +26,7 @@ export interface ExpenseDistribution {
 export interface EmployeeDetail {
   employeeNumber: string;
   name: string;
+  baseSalary: number;
   hoursWorked: number;
   deliveryPayment: number;
   deductions: number;

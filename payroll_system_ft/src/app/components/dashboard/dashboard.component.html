@@ -22,12 +22,16 @@
   <!-- Stats Cards -->
   <div class="stats-grid">
     <div class="stat-card">
+      <div class="stat-label">Total Entregas</div>
+      <div class="stat-value">{{ totalDeliveries }}</div>
+    </div>
+    <div class="stat-card">
       <div class="stat-label">Gasto Total Nómina</div>
       <div class="stat-value">${{ totalPayroll | number:'1.2-2' }}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Total Entregas</div>
-      <div class="stat-value">{{ totalDeliveries }}</div>
+      <div class="stat-label">Total Sueldo Base</div>
+      <div class="stat-value">${{ totalBaseSalary | number:'1.2-2' }}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Total Bonos</div>
@@ -73,6 +77,7 @@
           <tr>
             <th>Empleado</th>
             <th>Horas Trabajadas</th>
+            <th>Sueldo Base</th>
             <th>Pago Entregas</th>
             <th>Retenciones (ISR)</th>
             <th>Vales Despensa</th>
@@ -86,13 +91,14 @@
               <div class="employee-number">{{ employee.employeeNumber }}</div>
             </td>
             <td class="hours-worked">{{ employee.hoursWorked }} hrs</td>
+            <td class="amount">${{ employee.baseSalary | number:'1.2-2' }}</td>
             <td class="amount positive">${{ employee.deliveryPayment | number:'1.2-2' }}</td>
             <td class="amount negative">-${{ employee.deductions | number:'1.2-2' }}</td>
             <td class="amount positive">${{ employee.foodVouchers | number:'1.2-2' }}</td>
             <td class="amount total">${{ employee.totalNet | number:'1.2-2' }}</td>
           </tr>
           <tr *ngIf="employeeDetails.length === 0">
-            <td colspan="6" class="no-data">No hay datos disponibles para este período</td>
+            <td colspan="7" class="no-data">No hay datos disponibles para este período</td>
           </tr>
         </tbody>
       </table>

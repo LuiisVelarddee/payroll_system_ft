@@ -15,6 +15,7 @@ export class DashboardComponent implements OnInit {
   totalDeliveries: number = 0;
   totalBonuses: number = 0;
   totalDeductions: number = 0;
+  totalBaseSalary: number = 0;
 
   // Monthly Trend Data
   monthlyTrendData: any[] = [];
@@ -76,9 +77,35 @@ export class DashboardComponent implements OnInit {
 
   loadDashboardData(): void {
     this.loading = true;
-    this.loadStats();
+    
+    // Primero cargar los stats y luego la distribución de gastos
+    this.dashboardService.getStats(this.selectedMonth, this.selectedYear).subscribe({
+      next: (response) => {
+        
+        if (response.success) {
+          this.totalDeliveries = Number(response.data.totalDeliveries) || 0;
+          this.totalBonuses = Number(response.data.totalBonuses) || 0;
+          this.totalDeductions = Number(response.data.totalDeductions) || 0;
+          this.totalBaseSalary = Number(response.data.totalBaseSalary) || 0;
+          
+          // Calcular el Gasto Total Nómina en el frontend
+          this.totalPayroll = this.totalBaseSalary + this.totalBonuses + this.totalDeductions;
+          
+          // Usar setTimeout para asegurar que los valores se actualicen
+          setTimeout(() => {
+            this.prepareExpenseChart(null);
+          }, 100);
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error al cargar estadísticas:', error);
+        this.loading = false;
+      }
+    });
+    
+    // Cargar el resto de datos en paralelo
     this.loadMonthlyTrend();
-    this.loadExpenseDistribution();
     this.loadEmployeeDetails();
   }
 
@@ -108,21 +135,6 @@ export class DashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error al cargar tendencia mensual:', error);
-      }
-    });
-  }
-
-  loadExpenseDistribution(): void {
-    this.dashboardService.getExpenseDistribution(this.selectedMonth, this.selectedYear).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.prepareExpenseChart(response.data);
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error al cargar distribución de gastos:', error);
-        this.loading = false;
       }
     });
   }
@@ -188,33 +200,110 @@ export class DashboardComponent implements OnInit {
   }
 
   prepareExpenseChart(data: any): void {
-    const total = data.netSalary + data.deductions;
-    const netPercentage = total > 0 ? ((data.netSalary / total) * 100).toFixed(0) : 0;
-    const deductionsPercentage = total > 0 ? ((data.deductions / total) * 100).toFixed(0) : 0;
-
-    // Destroy previous chart if exists
+    // Forzar conversión a números
+    const gastoTotalNomina = Number(this.totalPayroll) || 0;
+    const totalSueldoBase = Number(this.totalBaseSalary) || 0;
+    const totalBonos = Number(this.totalBonuses) || 0;
+    const totalRetenciones = Number(this.totalDeductions) || 0;
+    
+    // Calcular el total para la gráfica (sin incluir el gasto total)
+    const totalGastos = totalSueldoBase + totalBonos + totalRetenciones;
+    
+    // Calcular porcentajes reales
+    let baseSalaryPct = 0;
+    let bonusesPct = 0;
+    let deductionsPct = 0;
+    
+    if (totalGastos > 0) {
+      baseSalaryPct = (totalSueldoBase / totalGastos) * 100;
+      bonusesPct = (totalBonos / totalGastos) * 100;
+      deductionsPct = (totalRetenciones / totalGastos) * 100;
+    }
+    
+    // Destruir gráfica anterior si existe
     if (this.expenseChart) {
       this.expenseChart.destroy();
     }
 
-    // Create new chart
+    // Crear nueva gráfica
     const ctx = document.getElementById('expenseChart') as HTMLCanvasElement;
+    if (!ctx) {
+      console.error('No se encontró el canvas expenseChart');
+      return;
+    }
+    
+    const centerTextPlugin = {
+      id: 'centerText',
+      afterDraw: (chart: any) => {
+        const ctx = chart.ctx;
+        const chartArea = chart.chartArea;
+        const centerX = (chartArea.left + chartArea.right) / 2;
+        const centerY = (chartArea.top + chartArea.bottom) / 2;
+        
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Texto superior "Gasto Total"
+        ctx.font = '14px Arial';
+        ctx.fillStyle = '#666';
+        ctx.fillText('Gasto Total', centerX, centerY - 12);
+        
+        // Monto del gasto total
+        const amount = `$${gastoTotalNomina.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        ctx.font = 'bold 20px Arial';
+        ctx.fillStyle = '#2c3e50';
+        ctx.fillText(amount, centerX, centerY + 12);
+        
+        ctx.restore();
+      }
+    };
+    
     this.expenseChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: [`Sueldo Neto (${netPercentage}%)`, `Retenciones (${deductionsPercentage}%)`],
+        labels: [
+          `Total Sueldo Base (${baseSalaryPct.toFixed(1)}%)`,
+          `Total Bonos (${bonusesPct.toFixed(1)}%)`,
+          `Total Retenciones ISR (${deductionsPct.toFixed(1)}%)`
+        ],
         datasets: [{
-          data: [data.netSalary, data.deductions],
-          backgroundColor: ['#3498db', '#e74c3c']
+          data: [totalSueldoBase, totalBonos, totalRetenciones],
+          backgroundColor: ['#3498db', '#2ecc71', '#e74c3c'],
+          borderWidth: 2,
+          borderColor: '#fff'
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '60%'
-      }
+        cutout: '60%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 15,
+              font: {
+                size: 12
+              },
+              usePointStyle: true
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const label = context.label || '';
+                const value = context.parsed || 0;
+                return `${label.split('(')[0].trim()}: $${value.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+              }
+            }
+          }
+        }
+      },
+      plugins: [centerTextPlugin]
     });
   }
+  
 
   onFilterChange(): void {
     this.loadDashboardData();

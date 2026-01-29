@@ -77,6 +77,7 @@ export class PayrollService {
   }
 
   getAvailableYears(): Observable<any> {
-    return this.http.get<any>('http://localhost:8000/api/dashboard/available-years');
+    return this.http.get<any>(environment.api + '/dashboard/available-years');
+
   }
 }
